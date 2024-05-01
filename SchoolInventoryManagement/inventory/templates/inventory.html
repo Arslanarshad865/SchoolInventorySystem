@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.add-to-reservation').click(function() {
+                var equipmentId = $(this).data('equipment-id');
+                $.ajax({
+                    url: '/add_to_reservation/' + equipmentId + '/',
+                    type: 'GET',
+                    success: function(data) {
+                        alert('Item added to reservation successfully!');
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        alert('Error adding item to reservation: ' + errorThrown);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Inventory</h1>
+
+    <!-- Search form -->
+    <form method="get" action="">
+        <input type="text" name="q" placeholder="Search..." value="{{ search_query }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Filter form -->
+    <form method="get" action="">
+        <label for="category">Filter by Category:</label>
+        <select name="category" id="category">
+            <option value="" {% if not selected_category %}selected{% endif %}>All</option>
+            {% for category in categories %}
+                <option value="{{ category.CATEGORY_ID }}" {% if selected_category == category.CATEGORY_ID %}selected{% endif %}>{{ category.CATEGORY_NAME }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Apply Filter</button>
+    </form>
+
+    <!-- Sort form -->
+    <form method="get" action="">
+        <label for="sort_by">Sort by:</label>
+        <select name="sort_by" id="sort_by">
+            <option value="available_items" {% if sort_by == 'available_items' %}selected{% endif %}>Available Items</option>
+            <option value="lent_items" {% if sort_by == 'lent_items' %}selected{% endif %}>Lent Items</option>
+            <!-- Add more options for other fields if needed -->
+        </select>
+        <label for="sort_order">Sort order:</label>
+        <select name="sort_order" id="sort_order">
+            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+        </select>
+        <button type="submit">Sort</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Available Items</th>
+                <th>Lent Items</th>
+                <th>Warranty</th>
+                <th>Onsite Only</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory_items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.category_name }}</td>
+                <td>{{ item.available_items }}</td>
+                <td>{{ item.lent_items }}</td>
+                <td>{{ item.warranty }}</td>
+                <td>{{ item.onsite }}</td>
+                <td><button class="add-to-reservation" data-equipment-id="{{ item.id }}">Add to Reservation</button></td> <!-- Button to add to reservation -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- Items per page form -->
+    <form method="get" action="">
+        <label for="items_per_page">Items per page:</label>
+        <select name="items_per_page" id="items_per_page">
+            <option value="10" {% if items_per_page == '10' %}selected{% endif %}>10</option>
+            <option value="20" {% if items_per_page == '20' %}selected{% endif %}>20</option>
+            <option value="50" {% if items_per_page == '50' %}selected{% endif %}>50</option>
+        </select>
+        <button type="submit">Apply</button>
+    </form>
+
+    <!-- Pagination links -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if inventory_items.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ inventory_items.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ inventory_items.number }} of {{ inventory_items.paginator.num_pages }}.
+            </span>
+
+            {% if inventory_items.has_next %}
+                <a href="?page={{ inventory_items.next_page_number }}">Next</a>
+                <a href="?page={{ inventory_items.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+
+</body>
+</html>
