@@ -1,0 +1,74 @@
+<!-- checkout.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'checkout.css' %}">
+    <title>Checkout</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.remove-item').click(function() {
+                var reservationId = $(this).data('reservation-id');
+                $(this).closest('tr').remove();
+                // Perform AJAX request to remove item with reservationId
+                $.ajax({
+                url: '/remove_reservation/' + reservationId + '/',
+                type: 'POST',
+                data:{'csrfmiddlewaretoken':"{{ csrf_token }}"},
+                success: function(data) {
+                    // Update the table accordingly
+                    if (data.success) {
+                        // $(this).closest('tr').remove();
+                        console.log("Removed")
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert('Error: ' + errorThrown);
+                }
+            });
+        
+            });
+
+            $('#confirm-btn').click(function() {
+                // Perform action to confirm checkout
+                // Redirect or submit form
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Checkout</h1>
+
+    <table class="checkout-table">
+        <thead>
+            <tr>
+                <th>Equipment</th>
+                <th>Borrow Date</th>
+                <th>Return Date</th>
+                <th>Purpose</th>
+                <th>Reservation Type</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr>
+                <td>{{ reservation.EQUIPMENT_ID.NAME }}</td>
+                <td>{{ reservation.BORROW_DATE }}</td>
+                <td>{{ reservation.RETURN_DATE }}</td>
+                <td>{{ reservation.PURPOSE }}</td>
+                <td>{{ reservation.RESERVATION_TYPE }}</td>
+                <td><button class="remove-item" data-reservation-id="{{ reservation.ID }}">Remove</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button id="confirm-btn">Confirm</button>
+</body>
+</html>

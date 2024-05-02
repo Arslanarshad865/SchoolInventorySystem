@@ -9,16 +9,53 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
+            var cartItems = []; // Array to store cart items
+
+            // Function to add item to cart
+            function addToCart(item) {
+                cartItems.push(item);
+                updateCartDialog();
+            }
+
+            // Function to update cart dialog
+            function updateCartDialog() {
+                var cartItemsContainer = $('#cart-items');
+                cartItemsContainer.empty();
+                cartItems.forEach(function(item) {
+                    cartItemsContainer.append('<li>' + item + '</li>');
+                });
+
+                // Toggle display based on whether there are items in the cart
+                $('#cart-items').css('display', 'block');// Show the cart items container
+                $('#cart-dialog').css('display', 'block');
+            }
+
+            $('#checkout-btn').click(function() {
+                window.location.href = '/checkout/'; // Redirect to the checkout URL
+            });
+            
             $('.add-to-reservation').click(function() {
                 var equipmentId = $(this).data('equipment-id');
+                var item = $(this).data('equipment-name');
+                var $row = $(this).closest('tr'); // Find the closest table row
                 $.ajax({
                     url: '/add_to_reservation/' + equipmentId + '/',
                     type: 'GET',
                     success: function(data) {
-                        alert('Item added to reservation successfully!');
+                        alert(data.text)
+                        if(data.success){
+                            addToCart(item);
+                            var availableItems = parseInt($row.find('.available-items').text());
+                            var lentItems = parseInt($row.find('.lent-items').text());
+
+                            // Increment lent items and decrement available items
+                            $row.find('.available-items').text(availableItems - 1);
+                            $row.find('.lent-items').text(lentItems + 1);
+                        }
+
                     },
                     error: function(xhr, textStatus, errorThrown) {
-                        alert('Error adding item to reservation: ' + errorThrown);
+                        alert('Error: ' + errorThrown);
                     }
                 });
             });
@@ -61,6 +98,14 @@
         </select>
         <button type="submit">Sort</button>
     </form>
+    <!-- Cart dialog box -->
+    <div id="cart-dialog" title="Cart">
+        <ul id="cart-items">
+            <!-- Cart items will be dynamically populated here -->
+        </ul>
+    <!-- Proceed to checkout button -->
+    <button id="checkout-btn">Proceed to Checkout</button>
+    </div>
 
     <table>
         <thead>
@@ -68,8 +113,8 @@
                 <th>Name</th>
                 <th>Description</th>
                 <th>Category</th>
-                <th>Available Items</th>
-                <th>Lent Items</th>
+                <th id="available-header">Available Items</th>
+                <th id="lent-header">Lent Items</th>
                 <th>Warranty</th>
                 <th>Onsite Only</th>
             </tr>
@@ -80,11 +125,11 @@
                 <td>{{ item.name }}</td>
                 <td>{{ item.description }}</td>
                 <td>{{ item.category_name }}</td>
-                <td>{{ item.available_items }}</td>
-                <td>{{ item.lent_items }}</td>
+                <td class="available-items" id="available-items-{{ item.id }}">{{ item.available_items }}</td>
+                <td class="lent-items" id="lent-items-{{ item.id }}">{{ item.lent_items }}</td>
                 <td>{{ item.warranty }}</td>
                 <td>{{ item.onsite }}</td>
-                <td><button class="add-to-reservation" data-equipment-id="{{ item.id }}">Add to Reservation</button></td> <!-- Button to add to reservation -->
+                <td><button class="add-to-reservation" data-equipment-name="{{ item.name }}" data-equipment-id="{{ item.id }}">Add to Reservation</button></td> <!-- Button to add to reservation -->
             </tr>
             {% endfor %}
         </tbody>

@@ -121,10 +121,14 @@ def add_to_reservation(request, equipment_id):
             raise Exception("User not logged in")
         accounts = Accounts.objects.get(ACCOUNT_ID=current_user_id)
         inventory_item = EquipmentInventory.objects.filter(ID_id=equipment_id).first()
-        if inventory_item and inventory_item.AVAILABLE > 0 and equipment.IS_ONSITE_ONLY:
-            reservation_type = 'onsite'
+
+        if inventory_item and inventory_item.AVAILABLE <= 0:
+            return JsonResponse({'success': False, 'text': "No such items left in inventory"})
+
+        if inventory_item and equipment.IS_ONSITE_ONLY:
+            reservation_type = 'Onsite'
         else:
-            reservation_type = 'borrow'
+            reservation_type = 'Borrow'
         
         # Check for pending reservations for the current user
         pending_reservations = Reservations.objects.filter(
@@ -135,7 +139,6 @@ def add_to_reservation(request, equipment_id):
             # Add new items to the existing reservation
             existing_pending_reservation = pending_reservations.first()
             reservation = existing_pending_reservation
-            reservation_type = reservation_type+' --add_to_existing'
         else:
             # Create a new reservation with the current user's account
             reservation = Reservations.objects.create(USER_ID=accounts, CREATED_DATETIME=timezone.now(), UPDATED_DATETIME=timezone.now())
@@ -144,7 +147,6 @@ def add_to_reservation(request, equipment_id):
                 RESERVATION_ID=reservation,
                 STATUS='pending'
             )
-            reservation_type = reservation_type+' --new'
         # Ensure that the reservation object is created successfully
         if not reservation:
             raise Exception("Failed to create reservation")
@@ -161,7 +163,64 @@ def add_to_reservation(request, equipment_id):
             PURPOSE='Reservation', 
             RESERVATION_TYPE=reservation_type
         )
-        return JsonResponse({'success': True})
+        # Update the EquipmentInventory
+        if inventory_item:
+            inventory_item.LENT += 1
+            inventory_item.AVAILABLE -= 1
+            inventory_item.save()
+        return JsonResponse({'success': True, 'text': 'Item added successfully'})
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+from .models import InventoryItem, Order, OrderItem
+from .forms import CartAddItemForm, CheckoutForm
+
+def inventory(request):
+    items = EquipmentDetails.objects.all()
+    return render(request, 'inventory1.html', {'items': items})
+
+def add_to_cart(request, item_id):
+    # Implement logic to add item to cart
+    return redirect('cart')
+
+def remove_from_cart(request, item_id):
+    # Implement logic to remove item from cart
+    return redirect('cart')
+
+def cart(request):
+    # Implement logic to display cart items
+    return render(request, 'cart.html')
+
+def checkout(request):
+    # Implement logic for checkout process
+    current_user_id = request.session.get('user_id')
+    reservations = EquipmentReservations.objects.filter(RESERVATION_ID__USER_ID=current_user_id)
+
+    context = {
+        'reservations': reservations
+    }
+    return render(request, 'checkout.html', context=context)
+
+def remove_reservation(request, reservation_id):
+    try:
+        reservation = EquipmentReservations.objects.get(pk=reservation_id)
+        equipment_id = reservation.EQUIPMENT_ID_id
+        reservation.delete()
+        inventory_item = EquipmentInventory.objects.filter(ID_id=equipment_id).first()
+        if inventory_item:
+            inventory_item.LENT -= 1
+            inventory_item.AVAILABLE += 1
+            inventory_item.save()
+        return JsonResponse({'success': True})
+    except EquipmentReservations.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Reservation not found'})
+
+
+def add_to_cart(request, item_id):
+    form = CartAddItemForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        # Handle form submission
+        quantity = form.cleaned_data['quantity']
+        # Add the item to the cart
+    return redirect('cart')

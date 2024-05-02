@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <h1>Inventory</h1>
+    <ul class="inventory-list">
+        {% for item in items %}
+            <li class="inventory-item">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-price">${{ item.price }}</span>
+                <form method="POST" action="{% url 'add_to_cart' item.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" min="1" value="1">
+                    <button type="submit">Add to Cart</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

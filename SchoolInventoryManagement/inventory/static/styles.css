@@ -1,1 +1,125 @@
 
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+button {
+    background-color: #45a049;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+textarea:focus,
+select:focus {
+    border: 1px solid #4CAF50;
+}
+
+#cart-dialog {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    position: fixed;
+    /* bottom: 20px;  */
+    right: 20px; /* Adjust this value as needed */
+    width: 300px; /* Adjust this value as needed */
+    background-color: #1a0404;
+    /* border: 1px solid #ccc; */
+    border-radius: 5px;
+    z-index: 9998;
+}
+
+#checkout-btn {
+    position: fixed;
+    margin-right: 0; 
+    background-color: #ffff00;
+    color: #fff;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 9999; 
+} 
+
+#checkout-btn:hover {
+    background-color: #ffff00;
+}
+
+#cart-items {
+    display:none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: fixed;
+    bottom: 60px; /* Adjust this value as needed to position the cart items */
+    right: 20px; /* Adjust this value as needed */
+    width: 300px; /* Adjust this value to match the cart dialog width */
+    background-color: rgba(26, 4, 4, 0.5);
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 9999; /* Ensure the cart items are above other content */
+}
+
+#cart-items li {
+    background-color: #ffff00;
+    color: #fff;
+    /* border: 1px solid #ccc; */
+    padding: 5px 10px;
+    margin-bottom: 5px;
+}
+
