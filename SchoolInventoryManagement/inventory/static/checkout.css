@@ -40,6 +40,7 @@ button {
 
 button:hover {
     background-color: #45a049;
+    color: #000000;
 }
 
 /* Additional styles for checkout items */
@@ -58,6 +59,6 @@ button:hover {
 
 .checkout-item-type {
     font-style: italic;
-    color: #666;
+    color: #000000;
 }
 

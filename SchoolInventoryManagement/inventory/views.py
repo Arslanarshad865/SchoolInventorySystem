@@ -173,21 +173,6 @@ def add_to_reservation(request, equipment_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-from .models import InventoryItem, Order, OrderItem
-from .forms import CartAddItemForm, CheckoutForm
-
-def inventory(request):
-    items = EquipmentDetails.objects.all()
-    return render(request, 'inventory1.html', {'items': items})
-
-def add_to_cart(request, item_id):
-    # Implement logic to add item to cart
-    return redirect('cart')
-
-def remove_from_cart(request, item_id):
-    # Implement logic to remove item from cart
-    return redirect('cart')
-
 def cart(request):
     # Implement logic to display cart items
     return render(request, 'cart.html')
@@ -195,8 +180,16 @@ def cart(request):
 def checkout(request):
     # Implement logic for checkout process
     current_user_id = request.session.get('user_id')
-    reservations = EquipmentReservations.objects.filter(RESERVATION_ID__USER_ID=current_user_id)
-
+     # Get pending reservations for the current user
+    pending_reservations = ReservationStatus.objects.filter(
+        RESERVATION_ID__USER_ID=current_user_id, STATUS='pending'
+    ).select_related('RESERVATION_ID')
+    
+    # Join pending reservations with equipment reservations
+    reservations = EquipmentReservations.objects.filter(
+        RESERVATION_ID__in=pending_reservations.values('RESERVATION_ID')
+    )
+    
     context = {
         'reservations': reservations
     }
@@ -216,11 +209,22 @@ def remove_reservation(request, reservation_id):
     except EquipmentReservations.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Reservation not found'})
 
+def confirm_checkout(request):
+    try:
+        current_user_id = request.session.get('user_id')
+        pending_reservations = Reservations.objects.filter(USER_ID=current_user_id, reservationstatus__STATUS='pending')
+        for reservation in pending_reservations:
+            status = ReservationStatus.objects.get(RESERVATION_ID=reservation, STATUS='pending')
+            status.STATUS = 'approved'
+            status.save()
+        return JsonResponse({'success': True})
+    except ReservationStatus.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Pending reservation not found'})
 
-def add_to_cart(request, item_id):
-    form = CartAddItemForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        # Handle form submission
-        quantity = form.cleaned_data['quantity']
-        # Add the item to the cart
-    return redirect('cart')
+# def add_to_cart(request, item_id):
+#     form = CartAddItemForm(request.POST or None)
+#     if request.method == 'POST' and form.is_valid():
+#         # Handle form submission
+#         quantity = form.cleaned_data['quantity']
+#         # Add the item to the cart
+#     return redirect('cart')

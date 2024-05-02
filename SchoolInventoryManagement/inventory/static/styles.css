@@ -84,7 +84,7 @@ select:focus {
     position: fixed;
     margin-right: 0; 
     background-color: #ffff00;
-    color: #fff;
+    color: #000000;
     bottom: 20px;
     right: 20px;
     width: 300px;
@@ -93,10 +93,12 @@ select:focus {
     border-radius: 5px;
     cursor: pointer;
     z-index: 9999; 
+    font-weight: bold; 
 } 
 
 #checkout-btn:hover {
     background-color: #ffff00;
+    color: #000000;
 }
 
 #cart-items {
@@ -117,7 +119,7 @@ select:focus {
 
 #cart-items li {
     background-color: #ffff00;
-    color: #fff;
+    color: #000000;
     /* border: 1px solid #ccc; */
     padding: 5px 10px;
     margin-bottom: 5px;

@@ -35,9 +35,26 @@
             });
 
             $('#confirm-btn').click(function() {
-                // Perform action to confirm checkout
-                // Redirect or submit form
+                $.ajax({
+                    url: '/confirm_checkout/',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token in the request headers
+                    },
+                    success: function(data) {
+                        // Handle success response
+                        console.log('Checkout confirmed');
+                        $('.checkout-table tbody').empty();
+                        if (confirm('Reservation Successful. Do you want to go back to the inventory view page?')) {
+                            window.location.href = '/inventoryview/';
+                        }
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        // Handle error response
+                        console.error('Error confirming checkout:', errorThrown);
+                    }
             });
+        });
         });
     </script>
 </head>
@@ -56,16 +73,22 @@
             </tr>
         </thead>
         <tbody>
-            {% for reservation in reservations %}
-            <tr>
-                <td>{{ reservation.EQUIPMENT_ID.NAME }}</td>
-                <td>{{ reservation.BORROW_DATE }}</td>
-                <td>{{ reservation.RETURN_DATE }}</td>
-                <td>{{ reservation.PURPOSE }}</td>
-                <td>{{ reservation.RESERVATION_TYPE }}</td>
-                <td><button class="remove-item" data-reservation-id="{{ reservation.ID }}">Remove</button></td>
-            </tr>
-            {% endfor %}
+            {% if reservations %}
+                {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.EQUIPMENT_ID.NAME }}</td>
+                    <td>{{ reservation.BORROW_DATE }}</td>
+                    <td>{{ reservation.RETURN_DATE }}</td>
+                    <td>{{ reservation.PURPOSE }}</td>
+                    <td>{{ reservation.RESERVATION_TYPE }}</td>
+                    <td><button class="remove-item" data-reservation-id="{{ reservation.ID }}">Remove</button></td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6">No reservations found.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 
